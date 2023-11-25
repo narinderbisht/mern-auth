@@ -43,8 +43,8 @@ export const signin = async (req, res, next) => {
         res.cookie('access_token', token, { httpOnly: true, expire: new Date(Date.now()) + 3600000 }).status(201).json( rest );
 
     } catch (error) {
-        //next(errorHandler(500, error.message));
-        next(error);
+        next(errorHandler(500, error.message));
+        //next(error);
     }
         
     

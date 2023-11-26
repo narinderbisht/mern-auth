@@ -1,11 +1,17 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signinStart, signinSuccess, signinFaliure } from '../redux/slice/user';
+import { useDispatch, useSelector } from 'react-redux'
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.user);
   const [ formData, setFormData ] = useState([]);
+  
+  /* 
   const [ loading, setLoading ] = useState('');
-  const [ error, setError ] = useState('');
+  const [ error, setError ] = useState(''); */
   const handleFormData = ( e ) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   }
@@ -14,8 +20,7 @@ export default function SignIn() {
     //console.log(formData);
     
     try {
-      setLoading(true);
-      setError(false);
+      dispatch(signinStart());
       const options = {
         method: 'POST',
         headers: {
@@ -27,17 +32,16 @@ export default function SignIn() {
       const data = await res.json();
       console.log(data);
       if (data.success === false) {
-        setError(true);
-        setLoading(false);
+        dispatch(signinFaliure(data));
+        
       } else {
-        setError(false);
-        setLoading(false);
+        dispatch(signinSuccess(data));
+        navigate('/');
       }
-      navigate('/');
+      
       
     } catch (error) {
-      setError(true);
-      setLoading(false);
+      dispatch(signinFaliure(error));
     }
   }
   return (
@@ -53,7 +57,7 @@ export default function SignIn() {
         <Link to={'/sign-up'}><span className='text-blue-300'>Sign Up</span></Link>
       </div>
       {
-        error && <p className='text-red-500'>Something went wrong!</p>
+        error && <p className='text-red-500'>{ error.message ? error.message : 'Something went wrong' }</p>
       }
       
     </div>

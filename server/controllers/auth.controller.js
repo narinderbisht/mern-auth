@@ -26,7 +26,7 @@ export const signup = async(req, res, next) => {
 }
 
 export const signin = async (req, res, next) => {
-    console.log(req.body);
+    //console.log(req.body);
     try {
         const validUser = await User.findOne({ email: req.body.email });
         if (!validUser) {
@@ -47,5 +47,41 @@ export const signin = async (req, res, next) => {
         //next(error);
     }
         
+    
+}
+
+export const google = async(req, res, next) => {
+    try {
+        const existingUser = await User.findOne({ email: req.body.email });
+        if (existingUser) {
+            
+            const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET);
+            const { password: hasedPassword, ...rest } = existingUser._doc;
+
+            res.cookie('access_token', token, { httpOnly: true, expire: new Date(Date.now()) + 3600000 }).status(201).json(rest);
+            
+        } else {
+            const randomPassword = Math.random().toString(36).slice(-8);
+            const hasedPassword = bcryptjs.hashSync(randomPassword, 10);
+            const randomUsername = (req.body.name).split(" ").join("").toLowerCase() + (Math.floor(Math.random() * 1000)).toString();
+
+            const newUser = new User({
+                "username": randomUsername,
+                "email": req.body.email,
+                "password": hasedPassword,
+                "profilePicture": req.body.photo
+            });
+
+            await newUser.save();
+
+            const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+            const { password: hasedPassword2, ...rest } = newUser._doc;
+
+            res.cookie('access_token', token, { httpOnly: true, expire: new Date(Date.now()) + 3600000 }).status(201).json( rest );
+
+        }
+    } catch (error) {
+        next(errorHandler(500, error.message));
+    }
     
 }

@@ -29,6 +29,7 @@ export const signin = async (req, res, next) => {
     //console.log(req.body);
     try {
         const validUser = await User.findOne({ email: req.body.email });
+        //console.log(validUser);
         if (!validUser) {
             return next(errorHandler(404, 'User is not found'));
         }
@@ -40,7 +41,8 @@ export const signin = async (req, res, next) => {
         const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
         const { password: hasedPassword, ...rest } = validUser._doc;
 
-        res.cookie('access_token', token, { httpOnly: true, expire: new Date(Date.now()) + 3600000 }).status(201).json( rest );
+        res.cookie('access_token', token, { httpOnly: true, expire: new Date(Date.now()) + 3600000 }).status(201).json(rest);
+        
 
     } catch (error) {
         next(errorHandler(500, error.message));

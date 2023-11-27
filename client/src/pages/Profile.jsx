@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '../firebase';
-import { updateUserFaliure, updateUserStart, updateUserSuccess } from '../redux/slice/user';
+import { updateUserFaliure, updateUserStart, updateUserSuccess,
+deleteUserFaliure, deleteUserStart, deleteUserSuccess, signOut } from '../redux/slice/user';
 
 
 export default function Profile() {
@@ -84,6 +85,35 @@ export default function Profile() {
     }
     
   }
+
+  const handleDelete = async (e) => {
+    
+    try {
+      dispatch(deleteUserStart());
+      const options = {
+        method: "DELETE"
+      }
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, options);
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFaliure(data));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+      
+      
+    } catch (error) {
+      dispatch(deleteUserFaliure(error));
+    }
+  }
+  const handleSignOut = async (e) => {
+    try {
+      await fetch('/api/auth/signout');
+      dispatch(signOut());
+    } catch (error) {
+      
+    }
+  }
   return (
     <div className='max-w-lg mx-auto'>
       <h1 className='font-semibold text-center text-xl mt-4'>Profile</h1>
@@ -105,8 +135,8 @@ export default function Profile() {
         <button disabled={loading} className='uppercase rounded-lg bg-slate-500 p-3 text-center text-white hover:opacity-90 disabled:opacity-50'>{ loading ? 'Loading...': 'Update Profile'}</button>
       </form>
       <div className='flex justify-between mt-4'>
-        <span className='text-red-500 cursor-pointer'>Delete Account</span>
-        <span className='text-red-500 cursor-pointer'>Sign Out</span>
+        <span onClick={handleDelete} className='text-red-500 cursor-pointer'>Delete Account</span>
+        <span onClick={handleSignOut} className='text-red-500 cursor-pointer'>Sign Out</span>
       </div>
       {
         error && <p className='text-red-500 mt-5'>{ error.message ? error.message : 'Something went wrong' }</p>

@@ -16,13 +16,13 @@ mongoose.connect(process.env.MONGODB).then(() => {
  get directory path of the server. On localhost we know the path but on server
 we don't know the directory path, so we need to get the dynamic path first */
 
-const __dirpath = path.resolve();
+const __dirname = path.resolve();
 
 const app = express();
-app.use(express.static(path.join(__dirpath, 'client/dist')));
+app.use(express.static(path.join(__dirname, '/client/dist')));
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirpath, 'client', 'dist', 'index.html'));
+    res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
 app.use(cookieParser());
